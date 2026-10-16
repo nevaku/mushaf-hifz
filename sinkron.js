@@ -26,18 +26,18 @@ let unsubscribeSnapshot = null;
 let localSettings = null;
 
 // Elemen DOM
-const txtUserInfo = document.getElementById('user-info');
-const btnLogin = document.getElementById('btn-login');
-const btnLogout = document.getElementById('btn-logout');
+const txtUserInfo = document.getElementById('userInfo');
+const btnLogin = document.getElementById('btnLogin');
+const btnLogout = document.getElementById('btnLogout');
 const sectSettings = document.getElementById('settings-section');
 const chkDarkMode = document.getElementById('chk-dark-mode');
 const selFontSize = document.getElementById('sel-font-size');
-const txtSyncStatus = document.getElementById('sync-status');
+const txtSyncStatus = document.getElementById('syncStatus');
 
 // --- AMBIL DARI LOCALSTORAGE DI AWAL (Instant Load, Tanpa Nunggu Auth/Internet) ---
 function loadInitialLocalData() {
     const rawData = localStorage.getItem(STORAGE_KEY);
-    if (rawData) {
+    if (rawData && sectSettings) {
         localSettings = JSON.parse(rawData);
         applySettingsToUI(localSettings);
         sectSettings.classList.remove('hidden'); // Tampilkan setingan meskipun offline/belum login
@@ -47,7 +47,7 @@ loadInitialLocalData();
 
 // --- FUNGSI UPDATE UI ---
 function applySettingsToUI(settings) {
-    if (!settings) return;
+    if (!settings || !chkDarkMode || !selFontSize) return;
 
     // Terapkan ke elemen input
     chkDarkMode.checked = settings.theme === 'dark';
@@ -89,10 +89,11 @@ async function handleSettingsChange() {
     }
 }
 
-// Event Listener untuk Perubahan Input User
-chkDarkMode.addEventListener('change', handleSettingsChange);
-selFontSize.addEventListener('change', handleSettingsChange);
-
+if (chkDarkMode && selFontSize) {
+    // Event Listener untuk Perubahan Input User
+    chkDarkMode.addEventListener('change', handleSettingsChange);
+    selFontSize.addEventListener('change', handleSettingsChange);
+}
 
 // --- LOGIKA SINKRONISASI REAL-TIME DENGAN FIRESTORE ---
 function startCloudSync(userId) {
