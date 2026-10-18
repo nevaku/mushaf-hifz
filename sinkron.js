@@ -24,7 +24,6 @@ const STORAGE_KEY = "quran_settings";
 let currentUserId = null;
 let unsubscribeSnapshot = null;
 let localSettings = null;
-let localBookmark = null;
 
 // Elemen DOM
 const txtUserInfo = document.getElementById('userInfo');
