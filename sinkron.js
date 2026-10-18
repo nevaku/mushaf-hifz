@@ -24,6 +24,7 @@ const STORAGE_KEY = "quran_settings";
 let currentUserId = null;
 let unsubscribeSnapshot = null;
 let localSettings = null;
+let localBookmark = null;
 
 // Elemen DOM
 const txtUserInfo = document.getElementById('userInfo');
@@ -131,7 +132,9 @@ onAuthStateChanged(auth, (user) => {
         txtUserInfo.innerText = `Halo, ${user.displayName || user.email}`;
         btnLogin.classList.add('hidden');
         btnLogout.classList.remove('hidden');
-        sectSettings.classList.remove('hidden');
+        if (sectSettings) {
+            sectSettings.classList.remove('hidden');
+        }
 
         // Mulai sinkronisasi cloud setelah user sukses terverifikasi
         startCloudSync(user.uid);
