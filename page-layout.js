@@ -7,7 +7,7 @@
 // so the 15-line-per-page layout is exactly what the API says it is, not something computed here:
 //   surah header: ["h", surahNumber, arabicTitle]
 //   Basmalah:     ["b"]
-//   text line:    ["t", [[surah, ayah, startWordPosition, [word1, word2, ...], endsAyah, isSajda, tajweedWords, glossWords], ...]]
+//   text line:    ["t", [[surah, ayah, startWordPosition, [word1, word2, ...], endsAyah, isSajda, tajweedWords, glossWords, qcfCodes], ...]]
 //     — one array entry per run of consecutive words belonging to the same ayah; most lines have
 //       exactly one run, a line spanning an ayah boundary has two+. Words stay as an array (one
 //       entry per API word entry — an entry CAN render as multiple word spans when it carries a
@@ -21,6 +21,13 @@
 //       `glossWords` is the per-word translation text (word.translation.text from the
 //       translated fetch — both view modes read that fetch now), same parallel shape, null
 //       entries where the API has no gloss.
+//       `qcfCodes` is the per-word code_v2 string (Quran.com's QPC V2 glyph codes, Private Use
+//       Area) — the same parallel-to-word-ENTRIES shape. The Mushaf view renders these with the
+//       page's matching QCF font (see qcf-font.js) instead of the Unicode words; the Unicode
+//       `text` array stays the source of truth for segment counts (a waqf-split entry counts
+//       two) so the reveal cursor/data-idx indices never change. text_uthmani and code_v2 split
+//       into the SAME number of segments (verified across sampled pages), so code_v2 maps 1:1
+//       onto the rendered per-segment spans. The Per Ayat view ignores this and keeps Unicode.
 (function(window){
   "use strict";
 
@@ -37,6 +44,7 @@
           surah: surah, ayah: ayah, line: w.line_number, position: w.position,
           text: w.text_uthmani, tajweed: w.text_uthmani_tajweed || null,
           gloss: w.translation ? (w.translation.text || null) : null,
+          code: w.code_v2 || null,
           isEnd: w.char_type_name !== "word", isSajda: isSajda
         });
       });
@@ -49,7 +57,7 @@
     var curRun = null;
 
     function flushRun(endsAyah){
-      if (curRun) runs.push([curRun.surah, curRun.ayah, curRun.startWord, curRun.words, !!endsAyah, curRun.isSajda, curRun.tajweed, curRun.gloss]);
+      if (curRun) runs.push([curRun.surah, curRun.ayah, curRun.startWord, curRun.words, !!endsAyah, curRun.isSajda, curRun.tajweed, curRun.gloss, curRun.codes]);
       curRun = null;
     }
     function flushLine(){
@@ -83,11 +91,12 @@
       }
       if (!curRun || curRun.surah !== e.surah || curRun.ayah !== e.ayah){
         flushRun(false);
-        curRun = { surah: e.surah, ayah: e.ayah, startWord: e.position, words: [], tajweed: [], gloss: [], isSajda: e.isSajda };
+        curRun = { surah: e.surah, ayah: e.ayah, startWord: e.position, words: [], tajweed: [], gloss: [], codes: [], isSajda: e.isSajda };
       }
       curRun.words.push(e.text);
       curRun.tajweed.push(e.tajweed);
       curRun.gloss.push(e.gloss);
+      curRun.codes.push(e.code);
     });
     flushLine();
 

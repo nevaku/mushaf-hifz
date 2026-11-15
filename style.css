@@ -831,6 +831,28 @@
   }
   .word:hover{ background:#00000008; }
 
+  /* ---------- QCF page font (Mushaf view) ----------
+     The API's code_v2 glyph codes only render correctly under the font built for that exact
+     page (see qcf-font.js / app.js). app.js sets --qcf-page-font to the loaded family and adds
+     .qcf-mode to #mushafPage; only the word GLYPHS switch family — surah banners, the Basmalah,
+     ayah-number circles and Latin/gloss text keep their own fonts. */
+  .mushaf-page.qcf-mode .word{
+    font-family:var(--qcf-page-font), serif;
+  }
+  /* glyph codes sit on the baseline differently from shaped Unicode text; the page font is
+     drawn a touch smaller and given a hair more line-height so its ascenders/descenders don't
+     collide with the neighbouring line — the fit-to-width pass (fitLinesToWidth) then owns the
+     page scale exactly as before. */
+  .mushaf-page.qcf-mode .word-cell{
+    font-size:calc(var(--ayah-size) * var(--ayah-font-scale) * 0.82);
+  }
+  /* the waqf mark is its own glyph in the page font, so drop the Unicode-only nudge that
+     lifts the split sub-span (it was tuned for shaped text, not glyph codes) */
+  .mushaf-page.qcf-mode .word.waqaf{
+    top:0.35em;
+    padding-right:0.35em;
+  }
+
   /* ---------- playing-ayah highlight (app.js applyPlayingHighlight) ----------
      Mushaf mode lights each span of the sounding ayah; ayah mode lights its block. The
      tint is translucent so tajweed colors and the blur (unrevealed words) stay readable

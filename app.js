@@ -71,6 +71,25 @@
   };
   var DEFAULT_ARABIC_FONT = "uthman";
 
+  // ---------------- page-specific QCF glyph fonts (Mushaf view only) ----------------
+  // The Mushaf view paints the API's code_v2 glyph codes with the font built for that exact
+  // page (see qcf-font.js) — that's what gives the printed-mushaf look, since a page's glyphs
+  // are positioned for its own line layout. The Unicode families above then drive the Per Ayat
+  // view (and the Mushaf view's surah banners, Basmalah and ayah numbers, which are NOT glyph
+  // codes). Tajweed coloring needs the Unicode text the API's inline rule tags describe, which
+  // the glyph codes don't carry, so turning Tajwid on quietly falls back to Unicode rendering.
+  var QCF_ENABLED_KEY = "mushafHifzQcfFont";
+
+  function loadQcfEnabled() {
+    try {
+      return localStorage.getItem(QCF_ENABLED_KEY) !== "off";
+    } catch (e) {
+      return true;
+    }
+  }
+
+  var qcfEnabled = loadQcfEnabled();
+
   function loadViewMode() {
     try {
       return localStorage.getItem(VIEW_MODE_KEY) === "ayah" ? "ayah" : "mushaf";
@@ -161,6 +180,31 @@
     }
   }
 
+  // True only in the Mushaf view with the QCF page font on AND Tajwid off — the one combination
+  // where code_v2 glyphs are the right thing to paint (see the pref comment above). Per Ayat
+  // ignores QCF entirely (Unicode families there), and Tajwid needs Unicode rule text.
+  function qcfActiveForMushaf() {
+    return qcfEnabled && viewMode === "mushaf" && !contentPrefs.tajweed;
+  }
+
+  function setQcfEnabled(on) {
+    qcfEnabled = !!on;
+    try { localStorage.setItem(QCF_ENABLED_KEY, qcfEnabled ? "on" : "off"); } catch (e) { /* just won't persist */ }
+    var cb = document.getElementById("contentQcfFont");
+    if (cb) cb.checked = qcfEnabled;
+    renderPage(currentPage, true); // glyph vs Unicode text changes the metrics — re-fit
+  }
+
+  // code_v2 splits into the SAME segments as the Unicode word entry (verified: a waqf-split
+  // entry is two glyphs, a plain word is one) — so each rendered per-segment span can take its
+  // own glyph while the reveal cursor's per-segment indexing stays exactly as before.
+  function qcfSegments(code, segCount) {
+    if (typeof code !== "string" || !code) return null;
+    var parts = Array.from(code);
+    if (parts.length !== segCount) return null; // unexpected shape — caller uses Unicode
+    return parts;
+  }
+
   function setViewMode(mode) {
     mode = mode === "ayah" ? "ayah" : "mushaf";
     if (mode === viewMode) return;
@@ -226,13 +270,20 @@
       var cb = document.getElementById(id);
       if (cb) cb.checked = contentPrefs[ids[id]];
     });
+    var qcf = document.getElementById("contentQcfFont");
+    if (qcf) qcf.checked = qcfEnabled;
   }
 
   function setContentPref(key, on) {
     if (!(key in contentPrefs)) return;
+    var wasGlyphMode = qcfActiveForMushaf();
     contentPrefs[key] = !!on;
     saveContentPrefs();
     applyContentPrefsUI();
+    // Tajwid text and QCF glyph codes are mutually exclusive (the glyphs carry no rule
+    // markup): flipping Tajwid in the mushaf view must repaint with the other text source.
+    // Other prefs are pure CSS toggles — never re-render, so the reveal cursor is undisturbed.
+    if (key === "tajweed" && wasGlyphMode !== qcfActiveForMushaf()) renderPage(currentPage, true);
   }
 
   // ---------------- audio playback (issue #10) ----------------
@@ -2321,6 +2372,8 @@
     document.getElementById("contentWordGloss").addEventListener("change", function (e) { setContentPref("wordGloss", e.target.checked); });
     document.getElementById("contentTajweed").addEventListener("change", function (e) { setContentPref("tajweed", e.target.checked); });
 
+    document.getElementById("contentQcfFont").addEventListener("change", function (e) { setQcfEnabled(e.target.checked); });
+
     document.getElementById("arabicSizeSlider").addEventListener("input", function (e) {
       setAyahFontScale(parseFloat(e.target.value));
     });
@@ -2490,18 +2543,54 @@
 
     var cached = pageLinesCache[pageNo];
     if (cached) {
-      renderPageContent(pageNo, cached, skipScrollReset);
+      renderMushafWhenFontReady(pageNo, cached, skipScrollReset);
       return;
     }
 
     document.getElementById("mushafPage").innerHTML = pageLoadingHTML();
     loadPageLines(pageNo).then(function (lines) {
       if (currentPage !== pageNo || viewMode !== mode) return;
-      renderPageContent(pageNo, lines, skipScrollReset);
+      renderMushafWhenFontReady(pageNo, lines, skipScrollReset);
     }).catch(function (err) {
       console.error(err);
       if (currentPage !== pageNo || viewMode !== mode) return;
       showPageLoadError(pageNo);
+    });
+  }
+
+  // The page font must be READY before its glyph spans paint, or the first frame shows the
+  // Private Use Area codes as blank/notdef boxes. So: if QCF is active, load the page's font
+  // first, then render with it; if the load fails (offline with no local file) fall back to the
+  // plain Unicode text — a readable page beats an empty one. qcfPageFamily is set for
+  // renderPageContent/renderPageContent's callers via module state, reset on every render.
+  var qcfPageFamily = null; // family name to paint with, or null to use Unicode text
+  var qcfRenderToken = 0;    // bumps each render so a stale font load can't paint an old page
+
+  function renderMushafWhenFontReady(pageNo, linesOnPage, skipScrollReset) {
+    var token = ++qcfRenderToken;
+    if (!qcfActiveForMushaf() || !window.QcfFont) {
+      qcfPageFamily = null;
+      renderPageContent(pageNo, linesOnPage, skipScrollReset);
+      return;
+    }
+    // already loaded (a re-render, or returning to a page whose font was fetched) — paint now,
+    // no await, so the reveal cursor stays instant and there's no flash of a stale page.
+    if (window.QcfFont.isLoaded(pageNo)) {
+      qcfPageFamily = window.QcfFont.familyFor(pageNo);
+      renderPageContent(pageNo, linesOnPage, skipScrollReset);
+      return;
+    }
+    // first paint of a new page: show the loading state while its glyph font arrives, so the
+    // reader never sees Unicode text flash into glyph text.
+    document.getElementById("mushafPage").innerHTML = pageLoadingHTML();
+    window.QcfFont.load(pageNo).then(function (family) {
+      if (token !== qcfRenderToken || currentPage !== pageNo || viewMode !== "mushaf") return;
+      qcfPageFamily = family;
+      renderPageContent(pageNo, linesOnPage, skipScrollReset);
+    }).catch(function () {
+      if (token !== qcfRenderToken || currentPage !== pageNo || viewMode !== "mushaf") return;
+      qcfPageFamily = null; // font unavailable — Unicode fallback
+      renderPageContent(pageNo, linesOnPage, skipScrollReset);
     });
   }
 
@@ -2510,6 +2599,11 @@
     var cursor = pageCursor[pageNo] || 0;
     var wordIndex = 0;
     container.setAttribute("data-page", pageNo);
+    // the page font only styles the word GLYPHS (.word spans) — surah banners, Basmalah,
+    // ayah-number circles and glosses keep their own Unicode fonts (see style.css .qcf-mode)
+    var useQcf = !!qcfPageFamily;
+    container.classList.toggle("qcf-mode", useQcf);
+    if (useQcf) container.style.setProperty("--qcf-page-font", "'" + qcfPageFamily + "'");
     var html = '<div class="ayat-flow">';
 
     linesOnPage.forEach(function (line) {
@@ -2529,10 +2623,13 @@
       } else { // "t" — a real mushaf line
         html += '<div class="mushaf-line">';
         line[1].forEach(function (run) {
-          var surah = run[0], ayah = run[1], startWord = run[2], wordEntries = run[3], endsAyah = run[4], isSajdaAyah = run[5], tajweedEntries = run[6], glossEntries = run[7];
+          var surah = run[0], ayah = run[1], startWord = run[2], wordEntries = run[3], endsAyah = run[4], isSajdaAyah = run[5], tajweedEntries = run[6], glossEntries = run[7], codeEntries = run[8];
           for (var wi = 0; wi < wordEntries.length; wi++) {
             var segs = wordEntries[wi].split(" ");
             var tjParts = tajweedSegments(tajweedEntries ? tajweedEntries[wi] : null, segs.length);
+            // page-font glyphs for this word entry, split to match the Unicode segments; null
+            // when QCF is inactive or the shape doesn't line up, so we render Unicode instead
+            var codeSegs = qcfPageFamily ? qcfSegments(codeEntries ? codeEntries[wi] : null, segs.length) : null;
             var gloss = glossEntries ? glossEntries[wi] : null;
             for (var si = 0; si < segs.length; si++) {
               var isLastOfAyah = endsAyah && wi === wordEntries.length - 1 && si === segs.length - 1;
@@ -2542,7 +2639,7 @@
               // its Indonesian gloss (always visible — a study aid, never tested — see
               // body.hide-word-gloss in style.css for the toggle)
               html += '<span class="word-cell">' +
-                '<span class="word' + ((si == 1) ? " waqaf" : "") + (revealed ? " revealed" : "") + (isHintWord ? " hint" : "") + '" data-idx="' + wordIndex + '" data-w="' + (startWord + wi) + '">' + (tjParts ? tjParts[si] : segs[si]) + '</span>' +
+                '<span class="word' + ((si == 1) ? " waqaf" : "") + (revealed ? " revealed" : "") + (isHintWord ? " hint" : "") + '" data-idx="' + wordIndex + '" data-w="' + (startWord + wi) + '">' + (codeSegs ? codeSegs[si] : (tjParts ? tjParts[si] : segs[si])) + '</span>' +
                 (gloss && si === 0 ? '<span class="wgloss" data-idx="' + wordIndex + '" data-w="' + (startWord + wi) + '">' + escapeHtml(gloss) + '</span>' : "") +
                 '</span>';
               if (isLastOfAyah) {
@@ -2632,6 +2729,7 @@
     var container = document.getElementById("mushafPage");
     var cursor = pageCursor[pageNo] || 0;
     var wordIndex = 0;
+    container.classList.remove("qcf-mode"); // Per Ayat always uses the Unicode families
     var html = '<div class="ayah-flow">';
     var surahsOnPage = [];
 

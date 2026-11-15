@@ -20,6 +20,7 @@ const FILES = [
   "ayah-page.js",
   "quran-api.js",
   "page-layout.js",
+  "qcf-font.js",
   "audio.js",
   "app.js",
 ];
@@ -46,6 +47,19 @@ fs.mkdirSync(WWW, { recursive: true });
 for (const f of FILES) {
   if (f === "index.html") fs.writeFileSync(path.join(WWW, f), html);
   else fs.copyFileSync(path.join(ROOT, f), path.join(WWW, f));
+}
+// Page-specific QCF glyph fonts (fonts/qcf/QCF_P<NNN>.woff2) — copied wholesale so the APK can
+// render the Mushaf view offline. Absent before build/download-qcf-fonts.ps1 has run; the app
+// then falls back to Quran.com's CDN (see qcf-font.js), so a missing dir is a soft warning only.
+const QCF_SRC = path.join(ROOT, "fonts", "qcf");
+if (fs.existsSync(QCF_SRC)) {
+  const QCF_DEST = path.join(WWW, "fonts", "qcf");
+  fs.mkdirSync(QCF_DEST, { recursive: true });
+  const woff2 = fs.readdirSync(QCF_SRC).filter((n) => n.endsWith(".woff2"));
+  for (const n of woff2) fs.copyFileSync(path.join(QCF_SRC, n), path.join(QCF_DEST, n));
+  console.log("  + fonts/qcf: " + woff2.length + " woff2 files");
+} else {
+  console.warn("  ! fonts/qcf missing — run build/download-qcf-fonts.ps1 for offline page fonts (CDN fallback will be used)");
 }
 fs.writeFileSync(path.join(ROOT, "index.html"), html); // the live site IS this file (GitHub Pages serves main/)
 console.log("www/ ready: " + FILES.length + " files, version " + VERSION);
