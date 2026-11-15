@@ -587,7 +587,7 @@
   .audio-bar.open .ab-chevron{ transform:rotate(180deg); }
   .audio-panel{
     display:none;
-    padding:10px 16px 12px;
+    padding:0px 16px 4px;
     border-top:1px solid #1c3327;
     color:#cbd8c2;
     font-size:13px;
@@ -600,7 +600,7 @@
     align-items:center;
     justify-content:center;
     gap:6px;
-    margin-top:8px;
+    margin-top:4px;
     flex-wrap:wrap;
   }
   .ab-field{

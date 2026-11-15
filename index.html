@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="fonts.css?v=2026-09-06T03:00">
-<link rel="stylesheet" href="style.css?v=2026-10-18T16:32">
+<link rel="stylesheet" href="style.css?v=2026-11-15T14:47">
 </head>
 <body>
 
@@ -94,6 +94,14 @@
     </div>
 
     <div class="settings-group">
+      <div class="settings-label">Audio</div>
+      <label class="check-row"><input type="checkbox" id="tapPlayToggle"><span>Putar audio saat ayat dibuka</span></label>
+      <label class="check-row"><input type="checkbox" id="syncRevealToggle"><span>Buka kata otomatis mengikuti bacaan</span></label>
+      <label class="check-row"><input type="checkbox" id="autoScrollToggle"><span>Scroll otomatis mengikuti bacaan</span></label>
+      <div class="ab-credit">Reciter: Mishary Rashid Alafasy &middot; Audio kata: CDN Quran.com</div>
+    </div>
+
+    <div class="settings-group">
       <div class="settings-label">Konten</div>
       <label class="check-row"><input type="checkbox" id="contentArabic"><span>Arab</span></label>
       <label class="check-row"><input type="checkbox" id="contentTranslation"><span>Terjemahan</span></label>
@@ -131,7 +139,7 @@
     </div>
 
     <div class="settings-group">
-      <div class="settings-label">Versi nevaku-mushaf-hifz 1.8-M</div>
+      <div class="settings-label">Versi nevaku-mushaf-hifz 1.9-M 20261115</div>
       <div class="settings-label">Pembaruan</div>
       <div class="update-row">
         <button type="button" class="chip" id="checkUpdate">Periksa pembaruan</button>
@@ -148,9 +156,6 @@
       </button>
     </div>
     <div class="audio-panel" id="audioPanel">
-      <label class="check-row"><input type="checkbox" id="tapPlayToggle"><span>Putar audio saat ayat dibuka</span></label>
-      <label class="check-row"><input type="checkbox" id="syncRevealToggle"><span>Buka kata otomatis mengikuti bacaan</span></label>
-      <label class="check-row"><input type="checkbox" id="autoScrollToggle"><span>Scroll otomatis mengikuti bacaan</span></label>
       <div class="ab-row">
         <select id="rangeSurah" title="Surah"></select>
         <span class="ab-field">ayat</span>
@@ -172,7 +177,6 @@
         <button id="rangeStop" type="button" title="Berhenti">&#9724;</button>
         <span class="ab-status" id="rangeStatus"></span>
       </div>
-      <div class="ab-credit">Reciter: Mishary Rashid Alafasy &middot; Audio kata: CDN Quran.com</div>
     </div>
   </div>
 </div>
