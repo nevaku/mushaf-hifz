@@ -4,7 +4,7 @@ Alat bantu hafalan Qur'an berbasis web — layout 16-baris ala Mushaf Madinah,
 tampilan per-kata yang bisa disembunyikan/ditampilkan (reveal cursor) buat
 latihan hafalan, dan bookmark per-ayat per-device.
 
-**Live**: <a href="https://nevaku.github.io/mushaf-hifz/?w=1.5-M" target="_blank" rel="noopener noreferrer">nevaku-mushaf-hifz 1.8-M</a>
+**Live**: <a href="https://nevaku.github.io/mushaf-hifz/?w=1.10-M" target="_blank" rel="noopener noreferrer">nevaku-mushaf-hifz 1.10-M</a>
 
 ## Jalanin di lokal
 
@@ -31,8 +31,8 @@ repo.
 
 - `index.html` / `style.css` / `app.js` — shell, styling, logic. Kecil,
   sering diedit.
-- `fonts.css` — 4 font Arab Qur'an di-embed sebagai base64 (`@font-face`),
-  ~375KB, jarang berubah.
+- `fonts.css` — 3 font Arab Qur'an di-embed sebagai base64 (`@font-face`),
+  jarang berubah.
 - `surah-meta.js` — metadata statis per surah (nama, jumlah ayat,
   halaman pertama, ada-tidaknya Basmalah) — kecil (~10KB), jarang berubah.
 - `quran-api.js` — fetch halaman dari api.quran.com + cache di
