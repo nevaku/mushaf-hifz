@@ -10,7 +10,7 @@
     --rubric:#8E3A2C;
     --veil:#E7DEC2;
     --sidebar-w:300px;
-    --ayah-font:'Amiri Quran';
+    --ayah-font:'Uthman Hafs';
     --ayah-size:26px;
     --page-scale:1;
     --ayah-font-scale:1;
@@ -52,7 +52,7 @@
     margin-right:auto;
   }
   .brand .ar{
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     font-size:22px;
     color:var(--gold-soft);
     line-height:1;
@@ -93,11 +93,11 @@
     white-space:nowrap;
     font-size:13px;
     color:#D9CFA6;
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     direction:rtl;
     text-align:center;
   }
-  .topbar-status .ss-ar{ font-family:'Amiri Quran',serif; }
+  .topbar-status .ss-ar{ font-family:'Uthman Hafs',serif; }
   .topbar-status .ss-lat{
     font-family:'Cormorant Garamond',serif;
     font-style:italic;
@@ -309,7 +309,7 @@
   .bm-surah{
     font-size:13px;
     color:#F1E9C8;
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -366,7 +366,7 @@
     cursor:pointer;
   }
   .surah-go:hover{ background:#16301f; border-color:var(--gold-soft); }
-  .surah-info .name-ar{ font-family:'Amiri Quran',serif; font-size:17px; color:#F1E9C8; }
+  .surah-info .name-ar{ font-family:'Uthman Hafs',serif; font-size:17px; color:#F1E9C8; }
   .surah-info .name-lat{ font-size:11px; color:#9fae97; display:flex; gap:6px; align-items:center; }
   .badge{
     font-size:9.5px;
@@ -587,7 +587,7 @@
   .audio-bar.open .ab-chevron{ transform:rotate(180deg); }
   .audio-panel{
     display:none;
-    padding:10px 16px 12px;
+    padding:0px 16px 4px;
     border-top:1px solid #1c3327;
     color:#cbd8c2;
     font-size:13px;
@@ -600,7 +600,7 @@
     align-items:center;
     justify-content:center;
     gap:6px;
-    margin-top:8px;
+    margin-top:4px;
     flex-wrap:wrap;
   }
   .ab-field{
@@ -698,7 +698,7 @@
     margin-bottom: 20px;
   }
   .surah-banner .name{
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     font-size:calc(var(--ayah-size) * var(--page-scale) * 1.15);
     color:var(--green-deep);
   }
@@ -726,7 +726,7 @@
   }
   .basmalah{
     text-align:center;
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     font-size:calc(var(--ayah-size) * var(--page-scale) * 0.92);
     color:var(--ink);
     margin:-1% 0 2%;
@@ -734,7 +734,7 @@
 
   .ayat-flow{
     direction:rtl;
-    font-family:var(--ayah-font), 'Amiri Quran', serif;
+    font-family:var(--ayah-font), 'Uthman Hafs', serif;
     font-size:calc(var(--ayah-size) * var(--page-scale));
     color:var(--ink);
     max-width:100%;
@@ -969,7 +969,7 @@
 
   /* ---------- "ayah" view mode: word-by-word + full-ayah translation, no reveal cursor ---------- */
   .ayah-flow{
-    font-family:var(--ayah-font), 'Amiri Quran', serif;
+    font-family:var(--ayah-font), 'Uthman Hafs', serif;
     color:var(--ink);
     max-width:100%;
     margin:auto 0; /* center short pages vertically, same as .ayat-flow */
@@ -1048,7 +1048,7 @@
   }
   /* the quoted arabic words inside a word-range note box */
   .ayah-note .wn-quote{
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     font-size:1.25em;
     direction:rtl;
     unicode-bidi:embed;
@@ -1076,7 +1076,7 @@
     padding:40px;
   }
   .page-loading .ar{
-    font-family:'Amiri Quran',serif;
+    font-family:'Uthman Hafs',serif;
     font-size:20px;
     color:var(--gold);
   }
@@ -1309,7 +1309,7 @@
     text-align:center;
     padding:40px;
   }
-  .center-screen .ar{ font-family:'Amiri Quran',serif; font-size:22px; color:var(--gold-soft); }
+  .center-screen .ar{ font-family:'Uthman Hafs',serif; font-size:22px; color:var(--gold-soft); }
 
   ::-webkit-scrollbar{ width:4px; }
   ::-webkit-scrollbar-track{ background:transparent; }
