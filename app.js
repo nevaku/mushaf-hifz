@@ -57,7 +57,19 @@
   var VIEW_MODE_KEY = "mushafHifzViewMode";
   var AYAH_FONT_SCALE_KEY = "mushafHifzAyahFontScale";
   var TRANSLATION_FONT_SCALE_KEY = "mushafHifzTranslationFontScale";
+  var ARABIC_FONT_KEY = "mushafHifzArabicFont";
   var AYAH_FONT_SCALE_MIN = 0.5, AYAH_FONT_SCALE_MAX = 2.5, AYAH_FONT_SCALE_STEP = 0.01;
+
+  // Arabic Qur'an font choices — all five families are embedded in fonts.css (offline-safe).
+  // Maps the settings dropdown value to the actual CSS font-family name; the reader/mushaf
+  // text renders via the --ayah-font custom property, so switching is instant and re-fits.
+  var ARABIC_FONTS = {
+    uthman: "Uthman Hafs",
+    amiri: "Amiri Quran",
+    scheherazade: "Scheherazade New",
+    lateef: "Lateef"
+  };
+  var DEFAULT_ARABIC_FONT = "uthman";
 
   function loadViewMode() {
     try {
@@ -85,9 +97,19 @@
     }
   }
 
+  function loadArabicFont() {
+    try {
+      var v = localStorage.getItem(ARABIC_FONT_KEY);
+      return v && ARABIC_FONTS[v] ? v : DEFAULT_ARABIC_FONT;
+    } catch (e) {
+      return DEFAULT_ARABIC_FONT;
+    }
+  }
+
   var viewMode = loadViewMode();
   var ayahFontScale = loadAyahFontScale();
   var translationFontScale = loadTranslationFontScale();
+  var arabicFont = loadArabicFont();
 
   // syncs the toolbar/body to the current viewMode/ayahFontScale without changing either —
   // called after wiring the settings panel, and from the setters below.
@@ -114,6 +136,29 @@
     if (slider) slider.value = String(translationFontScale);
     var label = document.getElementById("translationSizeLabel");
     if (label) label.textContent = Math.round(translationFontScale * 100) + "%";
+  }
+
+  function applyArabicFont() {
+    document.documentElement.style.setProperty("--ayah-font", "'" + ARABIC_FONTS[arabicFont] + "'");
+    var sel = document.getElementById("arabicFontSelect");
+    if (sel) sel.value = arabicFont;
+  }
+
+  function setArabicFont(value) {
+    if (!ARABIC_FONTS[value]) return;
+    arabicFont = value;
+    try { localStorage.setItem(ARABIC_FONT_KEY, arabicFont); } catch (e) { /* storage unavailable — just won't persist */ }
+    applyArabicFont();
+    // glyph widths differ per family, so the mushaf line fitting must be re-measured;
+    // wait for the font face to be ready before measuring, then re-render so the page
+    // scale and reveal cursor are recomputed on the new metrics.
+    var family = ARABIC_FONTS[arabicFont];
+    var rerender = function () { renderPage(currentPage, true); };
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load("16px '" + family + "'").then(rerender, rerender);
+    } else {
+      rerender();
+    }
   }
 
   function setViewMode(mode) {
@@ -2283,6 +2328,12 @@
       setTranslationFontScale(parseFloat(e.target.value));
     });
 
+    var arabicFontSelect = document.getElementById("arabicFontSelect");
+    arabicFontSelect.value = arabicFont;
+    arabicFontSelect.addEventListener("change", function () {
+      setArabicFont(arabicFontSelect.value);
+    });
+
     var hintWordSelect = document.getElementById("hintWordSelect");
     hintWordSelect.value = String(hintWordCount);
     hintWordSelect.addEventListener("change", function () {
@@ -2300,6 +2351,7 @@
     applyViewModeUI();
     applyAyahFontScale();
     applyTranslationFontScale();
+    applyArabicFont();
     applyContentPrefsUI();
   }
 

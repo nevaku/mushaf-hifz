@@ -698,7 +698,7 @@
     margin-bottom: 20px;
   }
   .surah-banner .name{
-    font-family:'Uthman Hafs',serif;
+    font-family:var(--ayah-font), 'Uthman Hafs', serif;
     font-size:calc(var(--ayah-size) * var(--page-scale) * 1.15);
     color:var(--green-deep);
   }
@@ -726,7 +726,7 @@
   }
   .basmalah{
     text-align:center;
-    font-family:'Uthman Hafs',serif;
+    font-family:var(--ayah-font), 'Uthman Hafs', serif;
     font-size:calc(var(--ayah-size) * var(--page-scale) * 0.92);
     color:var(--ink);
     margin:-1% 0 2%;
